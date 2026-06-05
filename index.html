@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>projectdragonf.ly</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400&display=swap');
+
+    :root {
+      --ink: #0a0e12;
+      --water-deep: #0d1f2d;
+      --water-mid: #1a3a4a;
+      --water-surface: #2a5568;
+      --shimmer: #7ecfcf;
+      --gold: #c9a84c;
+      --fog: rgba(126, 207, 207, 0.06);
+      --text: #d4e8e8;
+      --text-dim: rgba(212, 232, 232, 0.4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--ink);
+      overflow: hidden;
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--text);
+    }
+
+    /* ── CANVAS LAKE ── */
+    canvas#lake {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    /* ── DRAGONFLY SVG ── */
+    .dragonfly {
+      position: fixed;
+      width: 64px;
+      height: 64px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      animation: dfFloat 8s ease-in-out infinite, dfAppear 2s ease 1.5s forwards;
+      filter: drop-shadow(0 0 12px var(--shimmer));
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    @keyframes dfAppear {
+      to { opacity: 1; }
+    }
+
+    @keyframes dfFloat {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0px) rotate(-2deg); }
+      33% { transform: translate(-50%, -50%) translateY(-12px) rotate(2deg); }
+      66% { transform: translate(-50%, -50%) translateY(6px) rotate(-1deg); }
+    }
+
+    /* wing beat */
+    .wing { transform-origin: center; animation: wingBeat 0.3s ease-in-out infinite alternate; }
+    .wing-r { animation-delay: 0.15s; }
+
+    @keyframes wingBeat {
+      from { transform: scaleY(1) scaleX(1); }
+      to { transform: scaleY(0.3) scaleX(0.9); }
+    }
+
+    /* ── MAIN CONTENT ── */
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      gap: 0;
+    }
+
+    .eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--shimmer);
+      opacity: 0;
+      animation: riseIn 1s ease 2.5s forwards;
+      margin-bottom: 48px;
+    }
+
+    .title-wrap {
+      text-align: center;
+      opacity: 0;
+      animation: riseIn 1.2s ease 3s forwards;
+    }
+
+    .title-main {
+      font-size: clamp(52px, 9vw, 100px);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 0.9;
+      color: var(--text);
+      display: block;
+    }
+
+    .title-suffix {
+      font-size: clamp(52px, 9vw, 100px);
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: -0.02em;
+      line-height: 0.9;
+      color: var(--gold);
+      display: block;
+      margin-left: 0.15em;
+    }
+
+    .subtitle {
+      margin-top: 28px;
+      font-size: clamp(14px, 2vw, 18px);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      opacity: 0;
+      animation: riseIn 1s ease 3.6s forwards;
+    }
+
+    .divider {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, transparent, var(--shimmer), transparent);
+      margin: 40px auto;
+      opacity: 0;
+      animation: riseIn 1s ease 4s forwards;
+    }
+
+    .status {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      opacity: 0;
+      animation: riseIn 1s ease 4.4s forwards;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--shimmer);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.6); }
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RIPPLE ON CLICK ── */
+    .ripple {
+      position: fixed;
+      border-radius: 50%;
+      border: 1px solid var(--shimmer);
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0);
+      animation: rippleOut 1.6s ease-out forwards;
+      z-index: 5;
+    }
+
+    @keyframes rippleOut {
+      to { transform: translate(-50%, -50%) scale(6); opacity: 0; }
+    }
+
+    /* ── COORDINATES ── */
+    .coords {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      opacity: 0;
+      animation: riseIn 1s ease 5s forwards;
+      z-index: 20;
+    }
+
+    /* ── GRAIN OVERLAY ── */
+    .grain {
+      position: fixed;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 30;
+      opacity: 0.4;
+      animation: grainMove 0.8s steps(2) infinite;
+    }
+
+    @keyframes grainMove {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-2%, -1%); }
+      50% { transform: translate(1%, 2%); }
+      75% { transform: translate(-1%, 1%); }
+      100% { transform: translate(2%, -2%); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="lake"></canvas>
+<div class="grain"></div>
+
+<!-- DRAGONFLY SVG -->
+<svg class="dragonfly" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- body -->
+  <ellipse cx="32" cy="38" rx="3" ry="14" fill="url(#bodyGrad)" opacity="0.9"/>
+  <ellipse cx="32" cy="24" rx="4" ry="6" fill="#7ecfcf" opacity="0.85"/>
+  <!-- head -->
+  <circle cx="32" cy="17" r="4" fill="#a8e0e0"/>
+  <!-- eyes -->
+  <circle cx="30" cy="16" r="1.5" fill="#0a0e12"/>
+  <circle cx="34" cy="16" r="1.5" fill="#0a0e12"/>
+  <!-- wings left -->
+  <ellipse class="wing wing-l" cx="19" cy="26" rx="13" ry="5" fill="#7ecfcf" opacity="0.25" transform="rotate(-15 19 26)"/>
+  <ellipse class="wing wing-l" cx="16" cy="34" rx="10" ry="4" fill="#7ecfcf" opacity="0.18" transform="rotate(-10 16 34)"/>
+  <!-- wings right -->
+  <ellipse class="wing wing-r" cx="45" cy="26" rx="13" ry="5" fill="#7ecfcf" opacity="0.25" transform="rotate(15 45 26)"/>
+  <ellipse class="wing wing-r" cx="48" cy="34" rx="10" ry="4" fill="#7ecfcf" opacity="0.18" transform="rotate(10 48 34)"/>
+  <defs>
+    <linearGradient id="bodyGrad" x1="32" y1="24" x2="32" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7ecfcf"/>
+      <stop offset="100%" stop-color="#2a5568"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="stage">
+  <div class="eyebrow">projectdragonf.ly</div>
+  <div class="title-wrap">
+    <span class="title-main">something</span>
+    <span class="title-suffix">is forming.</span>
+  </div>
+  <p class="subtitle">The OS awakens beneath the surface.</p>
+  <div class="divider"></div>
+  <div class="status">
+    <div class="dot"></div>
+    <span>sacred lake — initializing</span>
+  </div>
+</div>
+
+<div class="coords">32.4279° N &nbsp;·&nbsp; 3.6879° W &nbsp;·&nbsp; depth unknown</div>
+
+<script>
+  // ── LAKE RIPPLE CANVAS ──
+  const canvas = document.getElementById('lake');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Fade in canvas
+  setTimeout(() => canvas.style.opacity = 1, 100);
+
+  let ripples = [];
+  let time = 0;
+
+  // Ambient ripples
+  function spawnAmbient() {
+    ripples.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: 0,
+      maxR: 80 + Math.random() * 120,
+      alpha: 0.12 + Math.random() * 0.1,
+      speed: 0.4 + Math.random() * 0.4,
+    });
+  }
+
+  setInterval(spawnAmbient, 1800);
+  spawnAmbient();
+
+  function draw() {
+    time += 0.008;
+
+    // deep water gradient
+    const grad = ctx.createRadialGradient(
+      canvas.width * 0.5, canvas.height * 0.6, 0,
+      canvas.width * 0.5, canvas.height * 0.5, canvas.width * 0.8
+    );
+    grad.addColorStop(0, '#0d2535');
+    grad.addColorStop(0.5, '#091820');
+    grad.addColorStop(1, '#050c12');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // subtle shimmer lines (water surface)
+    for (let i = 0; i < 6; i++) {
+      const y = canvas.height * (0.3 + i * 0.08) + Math.sin(time + i * 1.2) * 8;
+      const shimmerGrad = ctx.createLinearGradient(0, y, canvas.width, y);
+      shimmerGrad.addColorStop(0, 'transparent');
+      shimmerGrad.addColorStop(0.3 + Math.sin(time * 0.5 + i) * 0.1, 'rgba(126,207,207,0.04)');
+      shimmerGrad.addColorStop(0.7, 'rgba(126,207,207,0.02)');
+      shimmerGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = shimmerGrad;
+      ctx.fillRect(0, y, canvas.width, 1);
+    }
+
+    // ripples
+    ripples = ripples.filter(rp => rp.alpha > 0.005);
+    ripples.forEach(rp => {
+      rp.r += rp.speed;
+      rp.alpha *= 0.985;
+      const progress = rp.r / rp.maxR;
+      ctx.beginPath();
+      ctx.ellipse(rp.x, rp.y, rp.r, rp.r * 0.35, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(126, 207, 207, ${rp.alpha * (1 - progress)})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    });
+
+    // center glow — the origin point
+    const glowGrad = ctx.createRadialGradient(
+      canvas.width / 2, canvas.height / 2, 0,
+      canvas.width / 2, canvas.height / 2, 180
+    );
+    glowGrad.addColorStop(0, `rgba(126, 207, 207, ${0.04 + Math.sin(time) * 0.02})`);
+    glowGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // ── CLICK RIPPLES ──
+  document.addEventListener('click', (e) => {
+    // canvas ripple
+    ripples.push({
+      x: e.clientX, y: e.clientY,
+      r: 0, maxR: 200,
+      alpha: 0.3, speed: 1.2,
+    });
+
+    // DOM ripple element
+    const el = document.createElement('div');
+    el.className = 'ripple';
+    el.style.left = e.clientX + 'px';
+    el.style.top = e.clientY + 'px';
+    el.style.width = el.style.height = '60px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1600);
+  });
+</script>
+</body>
+</html>
