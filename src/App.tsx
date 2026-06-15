@@ -21,23 +21,23 @@ function HubOverlay() {
           something <em>is forming.</em>
         </h1>
         <p className="hub-sub">The OS awakens beneath the surface.</p>
-        {!active && <p className="hub-hint-pill">hover a portal · double-click to enter</p>}
+        {active ? (
+          <div className="hub-enter">
+            <button type="button" className="hub-back" onClick={() => setLocation('/')}>
+              ← back to lake
+            </button>
+            <p className="hub-active">
+              <span className={`status-dot status-${active.status}`} />
+              {active.tagline}
+              <a href={active.url} target="_blank" rel="noreferrer">
+                {active.url.replace('https://', '')}
+              </a>
+            </p>
+          </div>
+        ) : (
+          <p className="hub-hint-pill">hover a portal · double-click to enter</p>
+        )}
       </header>
-
-      {active && (
-        <div className="hub-hint">
-          <button type="button" className="hub-back" onClick={() => setLocation('/')}>
-            ← back to lake
-          </button>
-          <p className="hub-active">
-            <span className={`status-dot status-${active.status}`} />
-            {active.tagline}
-            <a href={active.url} target="_blank" rel="noreferrer">
-              {active.url.replace('https://', '')}
-            </a>
-          </p>
-        </div>
-      )}
 
       <footer className="hub-footer">
         <span>@0xbik · Madrid · design · facilitation · Madrid</span>
