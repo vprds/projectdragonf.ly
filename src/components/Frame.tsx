@@ -31,7 +31,7 @@ export function Frame({
   author,
   bg = '#1a3a4a',
   width = 1,
-  height = 1.61803398875,
+  height = width * 1.61803398875,
   children,
   ...props
 }: FrameProps) {
@@ -47,15 +47,22 @@ export function Frame({
     }
   })
 
+  const hw = width / 2
+  const hh = height / 2
+  const pad = 0.05
+  const nameSize = 0.3 * width
+  const idSize = 0.12 * width
+
   return (
     <group {...props}>
       <Text
         font={(suspend(medium) as { default: string }).default}
-        fontSize={0.28}
+        fontSize={nameSize}
         anchorY="top"
         anchorX="left"
-        lineHeight={0.8}
-        position={[-0.375, 0.715, 0.01]}
+        lineHeight={0.85}
+        maxWidth={width - pad * 2}
+        position={[-hw + pad, hh - pad, 0.01]}
         material-toneMapped={false}
         color="#d4e8e8"
       >
@@ -63,9 +70,10 @@ export function Frame({
       </Text>
       <Text
         font={(suspend(regular) as { default: string }).default}
-        fontSize={0.1}
+        fontSize={idSize}
         anchorX="right"
-        position={[0.4, -0.659, 0.01]}
+        anchorY="bottom"
+        position={[hw - pad, -hh + pad, 0.01]}
         material-toneMapped={false}
         color="#7ecfcf"
       >
@@ -73,9 +81,10 @@ export function Frame({
       </Text>
       <Text
         font={(suspend(regular) as { default: string }).default}
-        fontSize={0.04}
-        anchorX="right"
-        position={[0.0, -0.677, 0.01]}
+        fontSize={0.05 * width}
+        anchorX="left"
+        anchorY="bottom"
+        position={[-hw + pad, -hh + pad, 0.01]}
         material-toneMapped={false}
         color="rgba(212,232,232,0.5)"
       >

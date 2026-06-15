@@ -14,7 +14,8 @@ export type PortalNode = {
 }
 
 // Order left → right (also defines the dragonfly patrol path).
-// Six-portal fan: Sacred Lake (the OS) and Lastrategia (the namespace) flank center.
+// OS (the hub) and Lastrategia (the namespace) are the two large central portals;
+// the four products fan out smaller on either side. Portal height scales with width.
 export const PORTALS: PortalNode[] = [
   {
     id: '02',
@@ -24,9 +25,9 @@ export const PORTALS: PortalNode[] = [
     url: 'https://evolve.football',
     status: 'live',
     bg: '#1a3a2a',
-    position: [-2.8, 0, 0],
-    rotation: [0, 0.72, 0],
-    width: 0.8,
+    position: [-2.95, 0, 0],
+    rotation: [0, 0.84, 0],
+    width: 0.74,
   },
   {
     id: '04',
@@ -36,21 +37,21 @@ export const PORTALS: PortalNode[] = [
     url: 'https://aqmen.ai',
     status: 'running',
     bg: '#1f1a2e',
-    position: [-1.68, 0.04, 0],
-    rotation: [0, 0.43, 0],
-    width: 0.86,
+    position: [-1.78, 0.03, 0],
+    rotation: [0, 0.5, 0],
+    width: 0.82,
   },
   {
     id: '01',
-    name: 'sacred\nlake',
+    name: 'OS',
     author: 'dragonf.ly · the OS',
     tagline: 'the OS awakens beneath the surface',
     url: 'https://dragonf.ly',
     status: 'running',
     bg: '#0d2535',
-    position: [-0.56, 0.08, 0],
+    position: [-0.6, 0.06, 0],
     rotation: [0, 0.14, 0],
-    width: 0.92,
+    width: 1.2,
   },
   {
     id: '06',
@@ -60,21 +61,21 @@ export const PORTALS: PortalNode[] = [
     url: 'https://lastrategia.com',
     status: 'live',
     bg: '#241606',
-    position: [0.56, 0.08, 0],
+    position: [0.6, 0.06, 0],
     rotation: [0, -0.14, 0],
-    width: 0.92,
+    width: 1.1,
   },
   {
     id: '03',
-    name: 'miro\ncoach',
+    name: 'miro',
     author: 'miro.coach',
     tagline: 'facilitation, distilled',
     url: 'https://miro.coach',
     status: 'live',
     bg: '#1a2a4a',
-    position: [1.68, 0.04, 0],
-    rotation: [0, -0.43, 0],
-    width: 0.86,
+    position: [1.78, 0.03, 0],
+    rotation: [0, -0.5, 0],
+    width: 0.82,
   },
   {
     id: '05',
@@ -84,8 +85,8 @@ export const PORTALS: PortalNode[] = [
     url: 'https://facilitacion.es',
     status: 'live',
     bg: '#2a2a24',
-    position: [2.8, 0, 0],
-    rotation: [0, -0.72, 0],
-    width: 0.8,
+    position: [2.95, 0, 0],
+    rotation: [0, -0.84, 0],
+    width: 0.74,
   },
 ]
