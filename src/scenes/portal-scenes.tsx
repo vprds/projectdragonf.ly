@@ -71,6 +71,30 @@ function Particles({
   )
 }
 
+/** Concentric rings that expand and fade — an "amplifier" pulse. */
+function PulseRings({ color = '#fce3a2', count = 4, y = -0.55, z = -2.5 }) {
+  const refs = useRef<(THREE.Mesh | null)[]>([])
+  useFrame((state) => {
+    for (let i = 0; i < count; i++) {
+      const m = refs.current[i]
+      if (!m) continue
+      const t = (state.clock.elapsedTime * 0.4 + i / count) % 1
+      m.scale.setScalar(0.3 + t * 2.4)
+      ;(m.material as THREE.MeshBasicMaterial).opacity = (1 - t) * 0.45
+    }
+  })
+  return (
+    <group position={[0, y, z]} rotation={[-Math.PI / 2, 0, 0]}>
+      {Array.from({ length: count }).map((_, i) => (
+        <mesh key={i} ref={(el) => (refs.current[i] = el)}>
+          <ringGeometry args={[0.5, 0.54, 56]} />
+          <meshBasicMaterial color={color} transparent opacity={0.4} side={THREE.DoubleSide} depthWrite={false} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 // ── Portal scenes ──────────────────────────────────────────
 
 // Sacred Lake — the OS awakens beneath the surface.
@@ -247,10 +271,41 @@ export function FacilitacionScene() {
   )
 }
 
+// Lastrategia — amplificadores digitales. (Lastra gold #FCE3A2 / brown #794719)
+export function LastrategiaScene() {
+  return (
+    <>
+      <ambientLight intensity={0.4} />
+      <pointLight position={[0, 1.4, -1.4]} intensity={2.4} distance={5} color="#fce3a2" />
+      <pointLight position={[1.2, -0.8, -1]} intensity={0.9} distance={4} color="#a8702f" />
+
+      {/* the name as territory — a luminous monolith */}
+      <Float speed={1} floatIntensity={0.3} rotationIntensity={0.15}>
+        <mesh position={[0, 0.05, -2.5]}>
+          <boxGeometry args={[0.34, 1.05, 0.34]} />
+          <meshStandardMaterial color="#fce3a2" emissive="#794719" emissiveIntensity={0.55} metalness={0.55} roughness={0.3} />
+        </mesh>
+      </Float>
+
+      {/* amplification pulses radiating from its base */}
+      <PulseRings color="#fce3a2" count={4} y={-0.5} z={-2.5} />
+
+      {/* base */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.52, -2.5]}>
+        <circleGeometry args={[1.5, 48]} />
+        <meshStandardMaterial color="#1c1206" roughness={0.8} metalness={0.2} />
+      </mesh>
+
+      <Particles count={60} color="#fce3a2" spread={2.8} depth={-2.5} rise={0.12} opacity={0.45} />
+    </>
+  )
+}
+
 export const PORTAL_SCENES: Record<string, () => ReactNode> = {
   '01': SacredLakeScene,
   '02': EvolveScene,
   '03': MiroCoachScene,
   '04': AqmenScene,
   '05': FacilitacionScene,
+  '06': LastrategiaScene,
 }

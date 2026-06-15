@@ -14,7 +14,7 @@ export type PortalNode = {
 }
 
 // Order left → right (also defines the dragonfly patrol path).
-// Sacred Lake / the OS sits at center; Miro + Facilitación to the right.
+// Six-portal fan: Sacred Lake (the OS) and Lastrategia (the namespace) flank center.
 export const PORTALS: PortalNode[] = [
   {
     id: '02',
@@ -24,9 +24,9 @@ export const PORTALS: PortalNode[] = [
     url: 'https://evolve.football',
     status: 'live',
     bg: '#1a3a2a',
-    position: [-2.15, 0, 0],
-    rotation: [0, 0.62, 0],
-    width: 0.82,
+    position: [-2.8, 0, 0],
+    rotation: [0, 0.72, 0],
+    width: 0.8,
   },
   {
     id: '04',
@@ -36,9 +36,9 @@ export const PORTALS: PortalNode[] = [
     url: 'https://aqmen.ai',
     status: 'running',
     bg: '#1f1a2e',
-    position: [-1.05, 0.04, 0],
-    rotation: [0, 0.28, 0],
-    width: 0.88,
+    position: [-1.68, 0.04, 0],
+    rotation: [0, 0.43, 0],
+    width: 0.86,
   },
   {
     id: '01',
@@ -48,8 +48,21 @@ export const PORTALS: PortalNode[] = [
     url: 'https://dragonf.ly',
     status: 'running',
     bg: '#0d2535',
-    position: [0, 0.08, 0],
-    width: 0.98,
+    position: [-0.56, 0.08, 0],
+    rotation: [0, 0.14, 0],
+    width: 0.92,
+  },
+  {
+    id: '06',
+    name: 'lastra\ntegia',
+    author: 'lastrategia.com',
+    tagline: 'amplificadores digitales',
+    url: 'https://lastrategia.com',
+    status: 'live',
+    bg: '#241606',
+    position: [0.56, 0.08, 0],
+    rotation: [0, -0.14, 0],
+    width: 0.92,
   },
   {
     id: '03',
@@ -59,9 +72,9 @@ export const PORTALS: PortalNode[] = [
     url: 'https://miro.coach',
     status: 'live',
     bg: '#1a2a4a',
-    position: [1.05, 0.04, 0],
-    rotation: [0, -0.28, 0],
-    width: 0.88,
+    position: [1.68, 0.04, 0],
+    rotation: [0, -0.43, 0],
+    width: 0.86,
   },
   {
     id: '05',
@@ -71,8 +84,8 @@ export const PORTALS: PortalNode[] = [
     url: 'https://facilitacion.es',
     status: 'live',
     bg: '#2a2a24',
-    position: [2.15, 0, 0],
-    rotation: [0, -0.62, 0],
-    width: 0.82,
+    position: [2.8, 0, 0],
+    rotation: [0, -0.72, 0],
+    width: 0.8,
   },
 ]
