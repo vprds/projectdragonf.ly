@@ -1,3 +1,4 @@
 {
+  "redirects": [{ "source": "/vuelo", "destination": "/vuelo/", "permanent": false }],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
