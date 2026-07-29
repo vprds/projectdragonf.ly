@@ -215,7 +215,8 @@
     margin: 0;
     text-wrap: balance;
     opacity: 0;
-    animation: rise 1s ease 0.65s forwards;
+    animation: rise 0.8s ease 0.15s forwards;   /* ink-morph is the real entrance */
+    filter: url(#ink-morph);
   }
   h1 em {
     font-style: normal;
@@ -416,6 +417,43 @@
 <body>
 <canvas id="stars"></canvas>
 <canvas id="fly"></canvas>
+
+<!-- Ink-morph filter for the headline (feTurbulence + feDisplacementMap).
+     Defaults are the SETTLED state, so the text is crisp/readable if JS never runs. -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <filter id="ink-morph" x="-50%" y="-80%" width="200%" height="260%" color-interpolation-filters="sRGB">
+    <feTurbulence id="ink-turb" type="fractalNoise" baseFrequency="0.002 0.0018" numOctaves="2" stitchTiles="stitch" seed="1" result="noise" />
+    <feDisplacementMap id="ink-disp" in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" />
+    <feComponentTransfer>
+      <feFuncR type="gamma" amplitude="1.05" exponent="0.9" />
+      <feFuncG type="gamma" amplitude="1.05" exponent="0.9" />
+      <feFuncB type="gamma" amplitude="1.05" exponent="0.9" />
+    </feComponentTransfer>
+  </filter>
+</svg>
+<script>
+  /* Text emerges from ink-like turbulence and settles into crisp letters.
+     Ported verbatim from the InkMorphText component's rAF tick (no React/framer-motion needed). */
+  (function () {
+    var turb = document.getElementById("ink-turb");
+    var disp = document.getElementById("ink-disp");
+    if (!turb || !disp) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; // stays settled = crisp
+    var settleMs = 2000, from = 0.28, to = 0.002, start = null;
+    function tick(t) {
+      if (!start) start = t;
+      var p = Math.min(1, (t - start) / settleMs);
+      var ease = 1 - Math.pow(1 - p, 3);
+      var freq = from + (to - from) * ease;
+      var scale = 80 * (1 - ease);
+      turb.setAttribute("baseFrequency", freq + " " + (freq * 0.9));
+      disp.setAttribute("scale", String(scale));
+      turb.setAttribute("seed", String(Math.floor(1000 + t * 0.02 + p * 50)));
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+</script>
 
 <div class="shell">
   <section class="hero">
