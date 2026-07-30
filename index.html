@@ -192,14 +192,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;   /* title pinned top, Publisher pinned bottom */
+    justify-content: center;   /* title + Publisher centred together */
     text-align: center;
     padding: clamp(2rem, 6vh, 4.5rem) 0;
+    position: relative;
   }
-  .hero-top {
+  .hero-center {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1.9rem;
+    opacity: 0.9;   /* minimal transparency so the constellation reads through */
   }
   .lede { max-width: 34ch; }
   .eyebrow {
@@ -262,17 +265,22 @@
     width: 100%;
   }
   .stage-ctrl {
-    position: relative;
-    margin-top: 2.75rem;
+    position: absolute;
+    bottom: clamp(1.5rem, 5vh, 3rem);
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 0.4rem;
     padding: 0.3rem;
     border-radius: var(--radius-full);
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* homogeneous with the Publisher button's glass */
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(126, 207, 207, 0.20);
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 6px 24px rgba(0, 0, 0, 0.35);
     opacity: 0;
-    animation: rise 1s ease 1.6s forwards;
+    animation: ctrl-fade 1s ease 1.6s forwards;   /* fade only — keeps translateX(-50%) */
   }
   .pill.deploy { margin-top: 0.25rem; padding: 0.85rem 1.5rem; font-size: 14px; }
   .stage-ctrl button {
@@ -298,7 +306,6 @@
 
   /* DRAGONFLY | Publisher lockup button → /publisher */
   .dfp-btn {
-    margin-top: 1.6rem;
     display: inline-flex;
     align-items: center;
     gap: 9px;
@@ -461,6 +468,7 @@
     from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  @keyframes ctrl-fade { to { opacity: 1; } }
   @keyframes hover {
     0%,100% { transform: translateY(0) rotate(0); }
     50%     { transform: translateY(-3px) rotate(-4deg); }
@@ -521,18 +529,18 @@
 
 <div class="shell">
   <section class="hero">
-    <div class="hero-top">
+    <div class="hero-center">
       <h1><span class="dim">Something…</span><br>is forming</h1>
-      <div class="stage-ctrl" role="group" aria-label="Dragonfly state">
-        <button type="button" data-mode="return">Return</button>
-        <button type="button" data-mode="fly">Fly</button>
-      </div>
+      <a class="dfp-btn" href="/publisher" aria-label="Dragonfly Publisher">
+        <span class="dfp-orb" aria-hidden="true"></span>
+        <b class="dfp-name">DRAGONFLY</b>
+        <span class="dfp-pub">Publisher</span>
+      </a>
     </div>
-    <a class="dfp-btn" href="/publisher" aria-label="Dragonfly Publisher">
-      <span class="dfp-orb" aria-hidden="true"></span>
-      <b class="dfp-name">DRAGONFLY</b>
-      <span class="dfp-pub">Publisher</span>
-    </a>
+    <div class="stage-ctrl" role="group" aria-label="Dragonfly state">
+      <button type="button" data-mode="return">Return</button>
+      <button type="button" data-mode="fly">Fly</button>
+    </div>
   </section>
 
 </div>
