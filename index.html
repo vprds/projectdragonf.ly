@@ -291,6 +291,65 @@
   }
   .stage-ctrl button:focus-visible { outline: 2px solid var(--saffron); outline-offset: 2px; }
 
+  /* DRAGONFLY | Publisher lockup button → /publisher */
+  .dfp-btn {
+    margin-top: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    padding: 11px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1px solid rgba(126, 207, 207, 0.20);
+    background: rgba(255, 255, 255, 0.035);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 6px 24px rgba(0, 0, 0, 0.35);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s, box-shadow 0.35s, background 0.35s;
+    opacity: 0;
+    animation: rise 1s ease 2s forwards;
+  }
+  .dfp-btn:hover, .dfp-btn:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(70, 229, 159, 0.55);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 10px 34px rgba(0, 0, 0, 0.45), 0 0 30px rgba(70, 229, 159, 0.28);
+    outline: none;
+  }
+  .dfp-btn:focus-visible { outline: 2px solid var(--saffron); outline-offset: 3px; }
+  .dfp-orb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    background: conic-gradient(from 140deg, #35e0c8, #46e59f, #fbbf3c, #b49bff, #35e0c8);
+    box-shadow: 0 0 16px rgba(70, 229, 159, 0.5);
+    animation: dfp-spin 14s linear infinite;
+  }
+  .dfp-btn:hover .dfp-orb { box-shadow: 0 0 22px rgba(70, 229, 159, 0.7); }
+  .dfp-name {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    font-weight: 600;
+    color: #eaf2f4;
+    line-height: 1;
+  }
+  .dfp-pub {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ash);
+    padding-left: 8px;
+    margin-left: 1px;
+    border-left: 1px solid rgba(126, 207, 207, 0.28);
+    line-height: 1;
+  }
+  @keyframes dfp-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .dfp-orb { animation: none; } }
+
   /* ---------- Portals ---------- */
   .portals {
     display: grid;
@@ -462,6 +521,11 @@
       <button type="button" data-mode="return">Return</button>
       <button type="button" data-mode="fly">Fly</button>
     </div>
+    <a class="dfp-btn" href="/publisher" aria-label="Dragonfly Publisher">
+      <span class="dfp-orb" aria-hidden="true"></span>
+      <b class="dfp-name">DRAGONFLY</b>
+      <span class="dfp-pub">Publisher</span>
+    </a>
   </section>
 
 </div>
