@@ -205,8 +205,9 @@
     opacity: 0.9;   /* minimal transparency so the constellation reads through */
     transition: opacity 0.7s ease;
   }
-  /* Fly = spiral warp: title + Publisher clear out so the spiral owns the screen */
+  /* Publisher warp: title + controls clear out so the spiral owns the screen */
   body.spiral-on .hero-center { opacity: 0; pointer-events: none; }
+  body.spiral-on .stage-ctrl { animation: none; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
   .lede { max-width: 34ch; }
   .eyebrow {
     font-size: 13px;
@@ -612,8 +613,6 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
   function setMode(m) {
     mode = m; modeStart = elNow;
     if (m === "assemble") meta.forEach(function (p) { p.dl = Math.random() * 0.5; });
-    if (m === "fly") spStart = elNow;                                  // reset spiral clock
-    document.body.classList.toggle("spiral-on", m === "fly");          // clear the title/Publisher
     paint(m === "assemble" ? "return" : m);
   }
   btns.forEach(function (b) { b.addEventListener("click", function () { setMode(b.getAttribute("data-mode")); }); });
@@ -621,7 +620,7 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
 
   /* ---- Spiral warp = the "Fly" state (GSAP spiral component ported to vanilla, drawn on #fly) ---- */
   var SP = { cet: 0.32, camZ: -400, camTravel: 3400, yOff: 28, zoom: 100, nStars: 5000, trail: 80, dur: 15 };
-  var spStars = null, spStart = 0, spT = 0;
+  var spStars = null, spStart = 0, spT = 0, spiralTransition = false;
   function spEase(p, g) { return p < 0.5 ? 0.5 * Math.pow(2 * p, g) : 1 - 0.5 * Math.pow(2 * (1 - p), g); }
   function spEl(x) { var c4 = (2 * Math.PI) / 4.5; if (x <= 0) return 0; if (x >= 1) return 1; return Math.pow(2, -8 * x) * Math.sin((x * 8 - 0.75) * c4) + 1; }
   function spMap(v, a, b, c, d) { return c + (d - c) * ((v - a) / (b - a)); }
@@ -652,9 +651,10 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
     if (dp < 0.6) sm = 1.0 + dp * 0.2; else { var t = (dp - 0.6) / 0.4; sm = 1.2 * (1 - t) + s.fs * t; }
     spDot({ x: vx, y: vy, z: s.z }, 8.5 * s.swf * sm);
   }
+  var SPIRAL_WARP = 2.8;   // seconds of warp before navigating to /publisher
   function renderSpiral(el) {
     if (!spStars) spMakeStars();
-    spT = reduce ? 0.62 : (((el - spStart) % SP.dur) / SP.dur);
+    spT = reduce ? 0.62 : spCon((el - spStart) / SPIRAL_WARP, 0, 1) * 0.92;   // 0 → deep warp over the transition
     var d = Math.min(window.devicePixelRatio || 1, 2);
     fx.setTransform(d, 0, 0, d, 0, 0);
     fx.globalCompositeOperation = "source-over"; fx.globalAlpha = 1;
@@ -670,6 +670,17 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
     fx.restore();
   }
 
+  /* DRAGONFLY | Publisher → play the spiral warp, then go to /publisher */
+  var pubBtn = document.querySelector(".dfp-btn");
+  if (pubBtn) pubBtn.addEventListener("click", function (e) {
+    var href = pubBtn.getAttribute("href") || "/publisher";
+    if (reduce || spiralTransition) return;          // reduced-motion: let the link navigate normally
+    e.preventDefault();
+    spiralTransition = true; spStart = elNow;
+    document.body.classList.add("spiral-on");         // clear title + controls
+    setTimeout(function () { window.location.href = href; }, (SPIRAL_WARP + 0.15) * 1000);
+  });
+
   var t0 = null, last = 0;
   function frame(ts) {
     if (t0 == null) t0 = ts;
@@ -678,8 +689,8 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
     var tt = reduce ? 0 : el;
     var local = el - modeStart;
 
-    /* Fly = spiral warp: take over #fly, skip the dragonfly + ambient */
-    if (mode === "fly") { renderSpiral(el); requestAnimationFrame(frame); return; }
+    /* Publisher warp: spiral takes over #fly until we navigate to /publisher */
+    if (spiralTransition) { renderSpiral(el); requestAnimationFrame(frame); return; }
 
     /* ambient */
     sx.clearRect(0, 0, innerWidth, innerHeight);
