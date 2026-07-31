@@ -203,7 +203,10 @@
     align-items: center;
     gap: 1.9rem;
     opacity: 0.9;   /* minimal transparency so the constellation reads through */
+    transition: opacity 0.7s ease;
   }
+  /* Fly = spiral warp: title + Publisher clear out so the spiral owns the screen */
+  body.spiral-on .hero-center { opacity: 0; pointer-events: none; }
   .lede { max-width: 34ch; }
   .eyebrow {
     font-size: 13px;
@@ -606,9 +609,66 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
   var pcx = L.cx, pcy = L.cy;
   var btns = Array.prototype.slice.call(document.querySelectorAll("[data-mode]"));
   function paint(m) { btns.forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-mode") === m); }); }
-  function setMode(m) { mode = m; modeStart = elNow; if (m === "assemble") meta.forEach(function (p) { p.dl = Math.random() * 0.5; }); paint(m === "assemble" ? "return" : m); }
+  function setMode(m) {
+    mode = m; modeStart = elNow;
+    if (m === "assemble") meta.forEach(function (p) { p.dl = Math.random() * 0.5; });
+    if (m === "fly") spStart = elNow;                                  // reset spiral clock
+    document.body.classList.toggle("spiral-on", m === "fly");          // clear the title/Publisher
+    paint(m === "assemble" ? "return" : m);
+  }
   btns.forEach(function (b) { b.addEventListener("click", function () { setMode(b.getAttribute("data-mode")); }); });
   paint("return");
+
+  /* ---- Spiral warp = the "Fly" state (GSAP spiral component ported to vanilla, drawn on #fly) ---- */
+  var SP = { cet: 0.32, camZ: -400, camTravel: 3400, yOff: 28, zoom: 100, nStars: 5000, trail: 80, dur: 15 };
+  var spStars = null, spStart = 0, spT = 0;
+  function spEase(p, g) { return p < 0.5 ? 0.5 * Math.pow(2 * p, g) : 1 - 0.5 * Math.pow(2 * (1 - p), g); }
+  function spEl(x) { var c4 = (2 * Math.PI) / 4.5; if (x <= 0) return 0; if (x >= 1) return 1; return Math.pow(2, -8 * x) * Math.sin((x * 8 - 0.75) * c4) + 1; }
+  function spMap(v, a, b, c, d) { return c + (d - c) * ((v - a) / (b - a)); }
+  function spCon(v, mn, mx) { return Math.min(Math.max(v, mn), mx); }
+  function spLerp(a, b, t) { return a * (1 - t) + b * t; }
+  function spPath(p) { p = spCon(1.2 * p, 0, 1); p = spEase(p, 1.8); var th = 2 * Math.PI * 6 * Math.sqrt(p), r = 170 * Math.sqrt(p); return { x: r * Math.cos(th), y: r * Math.sin(th) + SP.yOff }; }
+  function spRot(v1, v2, p, o1) { var mx = (v1.x + v2.x) / 2, my = (v1.y + v2.y) / 2, dx = v1.x - mx, dy = v1.y - my, ang = Math.atan2(dy, dx), o = o1 ? -1 : 1, r = Math.sqrt(dx * dx + dy * dy), b = Math.sin(p * Math.PI) * 0.05 * (1 - p); return { x: mx + r * (1 + b) * Math.cos(ang + o * Math.PI * spEl(p)), y: my + r * (1 + b) * Math.sin(ang + o * Math.PI * spEl(p)) }; }
+  function spDot(pos, sf) { var t2 = spCon(spMap(spT, SP.cet, 1, 0, 1), 0, 1), ncz = SP.camZ + spEase(Math.pow(t2, 1.2), 1.8) * SP.camTravel; if (pos.z > ncz) { var d = pos.z - ncz; fx.lineWidth = 400 * sf / d; fx.beginPath(); fx.arc(SP.zoom * pos.x / d, SP.zoom * pos.y / d, 0.5, 0, Math.PI * 2); fx.fill(); } }
+  function spMakeStars() {
+    var seed = 1234, rand = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    spStars = [];
+    for (var i = 0; i < SP.nStars; i++) {
+      var s = { angle: rand() * Math.PI * 2, dist: 30 * rand() + 15, rot: rand() > 0.5 ? 1 : -1, exp: 1.2 + rand() * 0.8, fs: 0.7 + rand() * 0.6 };
+      s.dx = s.dist * Math.cos(s.angle); s.dy = s.dist * Math.sin(s.angle); s.loc = (1 - Math.pow(1 - rand(), 3.0)) / 1.3;
+      var zmin = 0.5 * SP.camZ, zmax = SP.camTravel + SP.camZ; s.z = spLerp(zmin + rand() * (zmax - zmin), SP.camTravel / 2, 0.3 * s.loc); s.swf = Math.pow(rand(), 2.0);
+      spStars.push(s);
+    }
+  }
+  function spStar(s, p) {
+    var sp0 = spPath(s.loc), q = p - s.loc; if (q <= 0) return;
+    var dp = spCon(4 * q, 0, 1), ez;
+    if (dp < 0.3) ez = spLerp(dp, Math.pow(dp, 2), dp / 0.3); else if (dp < 0.7) ez = spLerp(Math.pow(dp, 2), spEl(dp), (dp - 0.3) / 0.4); else ez = spEl(dp);
+    var X, Y;
+    if (dp < 0.3) { X = spLerp(sp0.x, sp0.x + s.dx * 0.3, ez / 0.3); Y = spLerp(sp0.y, sp0.y + s.dy * 0.3, ez / 0.3); }
+    else if (dp < 0.7) { var m = (dp - 0.3) / 0.4, cs = Math.sin(m * Math.PI) * s.rot * 1.5, bx = sp0.x + s.dx * 0.3, by = sp0.y + s.dy * 0.3; X = spLerp(bx, sp0.x + s.dx * 0.7, m) + (-s.dy * 0.4 * cs) * m; Y = spLerp(by, sp0.y + s.dy * 0.7, m) + (s.dx * 0.4 * cs) * m; }
+    else { var fp = (dp - 0.7) / 0.3, bx2 = sp0.x + s.dx * 0.7, by2 = sp0.y + s.dy * 0.7, td = s.dist * s.exp * 1.5, sa = s.angle + 1.2 * s.rot * fp * Math.PI; X = spLerp(bx2, sp0.x + td * Math.cos(sa), fp); Y = spLerp(by2, sp0.y + td * Math.sin(sa), fp); }
+    var vx = (s.z - SP.camZ) * X / SP.zoom, vy = (s.z - SP.camZ) * Y / SP.zoom, sm;
+    if (dp < 0.6) sm = 1.0 + dp * 0.2; else { var t = (dp - 0.6) / 0.4; sm = 1.2 * (1 - t) + s.fs * t; }
+    spDot({ x: vx, y: vy, z: s.z }, 8.5 * s.swf * sm);
+  }
+  function renderSpiral(el) {
+    if (!spStars) spMakeStars();
+    spT = reduce ? 0.62 : (((el - spStart) % SP.dur) / SP.dur);
+    var d = Math.min(window.devicePixelRatio || 1, 2);
+    fx.setTransform(d, 0, 0, d, 0, 0);
+    fx.globalCompositeOperation = "source-over"; fx.globalAlpha = 1;
+    fx.fillStyle = "black"; fx.fillRect(0, 0, innerWidth, innerHeight);
+    fx.save();
+    fx.translate(innerWidth / 2, innerHeight / 2);
+    var t1 = spCon(spMap(spT, 0, SP.cet + 0.25, 0, 1), 0, 1), t2 = spCon(spMap(spT, SP.cet, 1, 0, 1), 0, 1);
+    fx.rotate(-Math.PI * spEase(t2, 2.7));
+    for (var i = 0; i < SP.trail; i++) { var f = spMap(i, 0, SP.trail, 1.1, 0.1), sw = (1.3 * (1 - t1) + 3.0 * Math.sin(Math.PI * t1)) * f; fx.fillStyle = "white"; fx.lineWidth = sw; var pos = spPath(t1 - 0.00015 * i), rt = spRot(pos, { x: pos.x + 5, y: pos.y + 5 }, Math.sin(spT * Math.PI * 2) * 0.5 + 0.5, i % 2 === 0); fx.beginPath(); fx.arc(rt.x, rt.y, sw / 2, 0, Math.PI * 2); fx.fill(); }
+    fx.fillStyle = "white";
+    for (var j = 0; j < spStars.length; j++) spStar(spStars[j], t1);
+    if (spT > SP.cet) { var dyy = SP.camZ * SP.yOff / SP.zoom; spDot({ x: 0, y: dyy, z: SP.camTravel }, 2.5); }
+    fx.restore();
+  }
 
   var t0 = null, last = 0;
   function frame(ts) {
@@ -618,6 +678,9 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
     var tt = reduce ? 0 : el;
     var local = el - modeStart;
 
+    /* Fly = spiral warp: take over #fly, skip the dragonfly + ambient */
+    if (mode === "fly") { renderSpiral(el); requestAnimationFrame(frame); return; }
+
     /* ambient */
     sx.clearRect(0, 0, innerWidth, innerHeight);
     for (var i = 0; i < amb.length; i++) { var a = amb[i]; var al = a.a * (0.55 + 0.45 * Math.sin(tt * a.tw + a.ph)); if (al > 0.01) { sx.globalAlpha = al; sx.fillStyle = a.c; sx.beginPath(); sx.moveTo(a.x, a.y - a.r); sx.lineTo(a.x + a.r * 0.87, a.y + a.r * 0.5); sx.lineTo(a.x - a.r * 0.87, a.y + a.r * 0.5); sx.closePath(); sx.fill(); } }
@@ -625,8 +688,7 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
 
     /* ---- targets per state ---- */
     var hcx = innerWidth / 2, hcy = innerHeight / 2;                 // centred on the viewport
-    var mobile = innerWidth < 640;
-    var baseR = Math.min(innerWidth, innerHeight) * (mobile ? 0.46 : 0.30);   // bigger dragonfly on mobile
+    var baseR = Math.min(innerWidth, innerHeight) * 0.30;
     var T = { cx: hcx, cy: hcy, R: baseR, yaw: 0.3, pitch: -0.42, flapHz: 2.2, hx: 0, hy: -1, flapI: 1 };
     var assembling = false, flightHeading = false;
 
@@ -639,7 +701,7 @@ var KF = {"n":2400,"k":14,"speed":24,"frames":"eQBuAB7mW/98ADDmjf82AC/mjf82AC/mP
       u = (u + dt * 0.045) % 1; var wp = crom(u);
       T.cx = wp[0] * innerWidth + Math.sin(tt * 0.7) * 42 + Math.sin(tt * 1.9) * 14;   // Catmull-Rom + organic drift
       T.cy = wp[1] * innerHeight + Math.sin(tt * 1.3) * 30 + Math.sin(tt * 0.5) * 24;
-      T.R = Math.min(innerWidth, innerHeight) * (mobile ? 0.24 : 0.16); T.yaw = Math.sin(tt * 0.4) * 0.2; T.flapHz = 3.3;
+      T.R = Math.min(innerWidth, innerHeight) * 0.16; T.yaw = Math.sin(tt * 0.4) * 0.2; T.flapHz = 3.3;
       flightHeading = true;
     } else { /* return (home + rest) — centred, calm; glide home if arriving from flight */
       T.cx = hcx; T.cy = hcy + Math.sin(tt * 0.8) * innerHeight * 0.008; T.R = baseR;
